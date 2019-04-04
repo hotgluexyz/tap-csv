@@ -65,4 +65,7 @@ and `state.json` is a file containing only the value of the last state
 message, which again is moot for this tap because it is only run on
 individual files a single time.
 
+## Initial Tap Repo
+
+This tap is based on the following `tap-csv` project: https://github.com/robertjmoore/tap-csv
 
