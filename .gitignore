@@ -98,3 +98,4 @@ config.json
 state.json
 .autoenv.zsh
 files/
+*.csv
