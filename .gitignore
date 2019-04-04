@@ -99,3 +99,4 @@ state.json
 .autoenv.zsh
 files/
 *.csv
+*.json

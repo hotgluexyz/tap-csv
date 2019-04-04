@@ -61,9 +61,29 @@ Example:
 }
 ```
 
-and `state.json` is a file containing only the value of the last state
-message, which again is moot for this tap because it is only run on
-individual files a single time.
+Optionally, the files definition can be provided by an external json file:
+
+**config.json**
+```json
+{
+	"csv_files_definition": "files_def.json"
+}
+```
+
+
+**files_def.json**
+```json
+[ 	
+	{	"entity" : "leads",
+		"file" : "/path/to/leads.csv",
+		"keys" : ["Id"]
+	},
+	{	"entity" : "opportunities",
+		"file" : "/path/to/opportunities.csv",
+		"keys" : ["Id"]
+	}
+]
+```
 
 ## Initial Tap Repo
 
