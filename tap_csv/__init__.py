@@ -25,10 +25,10 @@ def write_schema_from_header(entity, header, keys):
         #for now everything is a string; ideas for later:
         #1. intelligently detect data types based on a sampling of entries from the raw data
         #2. by default everything is a string, but allow entries in config.json to hard-type columns by name
-        schema["properties"][column] = {"type": "string" } 
+        schema["properties"][column] = {"type": "string" }
         header_map.append(column)
 
-    singer.write_schema(entity, schema, keys) 
+    singer.write_schema(entity, schema, keys)
 
     return header_map
 
@@ -44,7 +44,7 @@ def process_file(fileInfo):
             subInfo = copy.deepcopy(fileInfo)
             subInfo["file"] = fileInfo["file"] + filename
             process_file(subInfo) #recursive call
-    else: 
+    else:
         sync_file(fileInfo)
 
 def sync_file(fileInfo):
@@ -69,21 +69,14 @@ def sync_file(fileInfo):
 
     singer.write_state(STATE) #moot instruction, state always empty
 
-def parse_args(required_config_keys):
+def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--config', help='Config file', required=True)
-    parser.add_argument('-s', '--state', help='State file')
-    args = parser.parse_args()
-
-    config = load_json(args.config)
-    check_config(config, required_config_keys)
-
-    if args.state:
-        state = load_json(args.state)
-    else:
-        state = {}
-
-    return config, state
+    parser.add_argument('-c', '--config', help='Config file', required=False)
+    parser.add_argument('-s', '--state', help='State file', required=False)
+    parser.add_argument("-p", "--properties", help="Property selections", required=False)
+    parser.add_argument("--catalog", help="Catalog file", required=False)
+    parser.add_argument("-d", "--discover", action='store_true', help="Do schema discovery", required=False)
+    return parser.parse_args()
 
 def load_json(path):
     with open(path) as f:
@@ -94,19 +87,33 @@ def check_config(config, required_keys):
     if missing_keys:
         raise Exception("Config is missing required keys: {}".format(missing_keys))
 
-
 def do_sync():
     logger.info("Starting sync")
     for fileInfo in CONFIG['files']:
         process_file(fileInfo)
     logger.info("Sync completed")
 
-
 def main():
-    config, state = parse_args(REQUIRED_CONFIG_KEYS)
-    CONFIG.update(config)
-    STATE.update(state)
-    do_sync()
+    args = parse_args()
+
+    if args.discover:
+        catalog = {'streams': []}
+        print(json.dumps(catalog, indent=2))
+    elif not args.config:
+        logger.error("tap-csv: the following arguments are required: -c/--config")
+        exit(1)
+    else:
+        config = load_json(args.config)
+        check_config(config, REQUIRED_CONFIG_KEYS)
+
+        if args.state:
+            state = load_json(args.state)
+        else:
+            state = {}
+
+        CONFIG.update(config)
+        STATE.update(state)
+        do_sync()
 
 
 if __name__ == '__main__':
