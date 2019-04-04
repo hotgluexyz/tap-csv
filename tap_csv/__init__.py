@@ -85,11 +85,24 @@ def load_json(path):
 def check_config(config, required_keys):
     missing_keys = [key for key in required_keys if key not in config]
     if missing_keys:
-        raise Exception("Config is missing required keys: {}".format(missing_keys))
+        logger.error("tap-csv: Config is missing required keys: {}".format(missing_keys))
+        exit(1)
 
 def do_sync():
     logger.info("Starting sync")
-    for fileInfo in CONFIG['files']:
+
+    csv_files_definition = CONFIG.get("csv_files_definition", None)
+    if csv_files_definition:
+        if os.path.isfile(csv_files_definition):
+            csv_files = load_json(csv_files_definition)
+        else:
+            logger.error("tap-csv: '{}' file not found".format(csv_files_definition))
+            exit(1)
+    else:
+        check_config(CONFIG, REQUIRED_CONFIG_KEYS)
+        csv_files = CONFIG['files']
+
+    for fileInfo in csv_files:
         process_file(fileInfo)
     logger.info("Sync completed")
 
@@ -104,7 +117,6 @@ def main():
         exit(1)
     else:
         config = load_json(args.config)
-        check_config(config, REQUIRED_CONFIG_KEYS)
 
         if args.state:
             state = load_json(args.state)
