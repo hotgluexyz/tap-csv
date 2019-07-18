@@ -3,15 +3,15 @@
 from setuptools import setup
 
 setup(name='tap-csv',
-      version='0.1.0',
+      version='0.1.1',
       description='Singer.io tap for extracting data from a CSV file',
       author='Robert J. Moore',
       url='http://singer.io',
       classifiers=['Programming Language :: Python :: 3 :: Only'],
       py_modules=['tap_csv'],
       install_requires=[
-          'singer-python>=0.2.1',
-          'backoff==1.3.2',
+          'singer-python==5.7.0',
+          'backoff==1.8.0',
           'requests==2.12.4',
       ],
       entry_points='''
