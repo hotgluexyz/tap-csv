@@ -35,7 +35,7 @@ def write_schema_from_header(entity, header, keys):
 def process_file(fileInfo):
     #determines if file in question is a file or directory and processes accordingly
     if not os.path.exists(fileInfo["file"]):
-        logger.info("Directory " + fileInfo["file"] + " does not exist, skipping")
+        logger.info(fileInfo["file"] + " does not exist, skipping")
         return
     if os.path.isdir(fileInfo["file"]):
         fileInfo["file"] = os.path.normpath(fileInfo["file"]) + os.sep #ensures directories end with trailing slash
@@ -50,6 +50,7 @@ def process_file(fileInfo):
 def sync_file(fileInfo):
     if fileInfo["file"][-4:] != ".csv":
         logger.info("Skipping non-csv file '" + fileInfo["file"] + "'")
+        logger.info("Please provide a CSV file that ends with '.csv'; e.g. 'users.csv'")
         return
 
     logger.info("Syncing entity '" + fileInfo["entity"] + "' from file: '" + fileInfo["file"] + "'")
