@@ -1,91 +1,37 @@
 # tap-csv
 
-A [Singer](https://singer.io) tap for extracting data from a CSV file.
+A [Singer](https://singer.io) tap for extracting data from a CSV/XLSX file.
 
 ## Limitations
 
-This is a fairly brittle implementation of a CSV reader, but it gets 
-the job done for tasks where you file structure is highly predictable.
-
-The input files must be a traditionally-delimited CSV (commas separated
-columns, newlines indicate new rows, double quoted values) as defined 
-by the defaults to the python `csv` library.
-
-Paths to local files and the names of their corresponding entities are
-specified in the config file, and each file must contain a header row
-including the names of the columns that follow.
-
-Perhaps the greatest limitation of this implementation is that it
-assumes all incoming data is a string. Future iterations could
-intelligently identify data types based on a sampling of rows or
-allow the user to provide that information.
-
-
-## Install
-
-Clone this repository, and then:
-
-```bash
-› python setup.py install
-```
+This tap-csv implementation only handles the generation of a catalog (discover).
 
 ## Run
 
 #### Run the application
 
 ```bash
-
-python tap_csv.py -c config.json
-
+tap_csv -c config.json -d
 ```
 
 Where `config.json` contains an array called `files` that consists of dictionary objects detailing each destination table to be passed to Singer. Each of those entries contains: 
-* `entity`: The entity name to be passed to singer (i.e. the table)
 * `path`: Local path to the file to be ingested. Note that this may be a directory, in which case all files in that directory and any of its subdirectories will be recursively processed
-* `keys`: The names of the columns that constitute the unique keys for that entity
 
 Example:
 
 ```json
 {
-	"files":	[ 	
-					{	"entity" : "leads",
-						"file" : "/path/to/leads.csv",
-						"keys" : ["Id"]
-					},
-					{	"entity" : "opportunities",
-						"file" : "/path/to/opportunities.csv",
-						"keys" : ["Id"]
-					}
-				]
+	"files": [ 	
+		{
+			"path" : "/path/to/leads.csv"
+		},
+		{
+			"file" : "/path/to/opportunities.csv"
+		}
+	]
 }
-```
-
-Optionally, the files definition can be provided by an external json file:
-
-**config.json**
-```json
-{
-	"csv_files_definition": "files_def.json"
-}
-```
-
-
-**files_def.json**
-```json
-[ 	
-	{	"entity" : "leads",
-		"file" : "/path/to/leads.csv",
-		"keys" : ["Id"]
-	},
-	{	"entity" : "opportunities",
-		"file" : "/path/to/opportunities.csv",
-		"keys" : ["Id"]
-	}
-]
 ```
 
 ## Initial Tap Repo
 
-This tap is based on the following `tap-csv` project: https://github.com/robertjmoore/tap-csv
-
+This tap is based on the following `tap-csv` project: https://gitlab.com/meltano/tap-csv
