@@ -14,6 +14,7 @@ STATE = {}
 CONFIG = {}
 
 logger = singer.get_logger()
+csv.field_size_limit(sys.maxsize)
 
 def write_schema_from_header(entity, header, keys):
     schema =    {
