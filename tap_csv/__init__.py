@@ -7,29 +7,36 @@ import argparse
 import json
 import os
 import copy
-
+from singer import Transformer, metadata
 
 REQUIRED_CONFIG_KEYS = ['files']
 STATE = {}
 CONFIG = {}
 
 logger = singer.get_logger()
+csv.field_size_limit(sys.maxsize)
 
-def write_schema_from_header(entity, header, keys):
-    schema =    {
-                    "type": "object",
-                    "properties": {}
-                }
+def write_schema_from_header(entity, header, keys,schema_types={}):
+    schema = {
+                "type": "object",
+                "properties": {}
+             }
     header_map = []
     for column in header:
         #for now everything is a string; ideas for later:
         #1. intelligently detect data types based on a sampling of entries from the raw data
         #2. by default everything is a string, but allow entries in config.json to hard-type columns by name
-        schema["properties"][column] = {"type": "string" }
-        header_map.append(column)
+        if column in schema_types:
+            if type(schema_types[column])==dict:
+                schema["properties"][column] =schema_types[column]
+            else:    
+                schema["properties"][column] ={"type":f"{schema_types[column]}"} 
+        else:    
+            schema["properties"][column] = {"type": "string" }
+        header_map.append({"column":column,"type":schema["properties"][column]})
 
     singer.write_schema(entity, schema, keys)
-
+    
     return header_map
 
 def process_file(fileInfo):
@@ -57,14 +64,24 @@ def sync_file(fileInfo):
     with open(fileInfo["file"], "r") as f:
         needsHeader = True
         reader = csv.reader(f)
+
         for row in reader:
             if(needsHeader):
-                header_map = write_schema_from_header(fileInfo["entity"], row, fileInfo["keys"])
+                config_schema = {}
+                if "schema" in fileInfo:
+                    config_schema = fileInfo["schema"]
+                header_map = write_schema_from_header(fileInfo["entity"], row, fileInfo["keys"],config_schema)
                 needsHeader = False
             else:
                 record = {}
                 for index, column in enumerate(row):
-                    record[header_map[index]] = column
+                    with Transformer(pre_hook=transform_data_hook) as transformer:
+                        if "type" in header_map[index]["type"]:
+                            if "array" in header_map[index]["type"]["type"]:
+                                column = eval(column)
+                        rec = transformer.transform(column, header_map[index]["type"])
+                        record[header_map[index]["column"]] = rec
+                        abc = ''
                 if len(record) > 0: #skip empty lines
                     singer.write_record(fileInfo["entity"], record)
 
@@ -127,7 +144,33 @@ def main():
         CONFIG.update(config)
         STATE.update(state)
         do_sync()
+   
 
+def transform_data_hook(data, typ, schema):
+    result = data
+    if isinstance(data, dict):
+        result = {}
+        schema_properties = schema.get('properties', {})
+        for property in schema_properties:
+            data_property = data.get(property, None)
+            result[property] = data_property
+
+        if not typ == 'object':
+            result = json.dumps(data)
+
+    # Quickbooks can return the value '0.0' for integer typed fields. This
+    # causes a schema violation. Convert it to '0' if schema['type'] has
+    # integer.
+    if data == '0.0' and 'integer' in schema.get('type', []):
+        result = '0'
+
+    # Quickbooks Bulk API returns CSV's with empty strings for text fields.
+    # When the text field is nillable and the data value is an empty string,
+    # change the data so that it is None.
+    if data == "" and "null" in schema['type']:
+        result = None
+
+    return result
 
 if __name__ == '__main__':
     main()
