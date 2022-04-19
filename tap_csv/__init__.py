@@ -75,13 +75,15 @@ def sync_file(fileInfo):
             else:
                 record = {}
                 for index, column in enumerate(row):
-                    with Transformer(pre_hook=transform_data_hook) as transformer:
-                        if "type" in header_map[index]["type"]:
-                            if "array" in header_map[index]["type"]["type"]:
-                                column = eval(column)
-                        rec = transformer.transform(column, header_map[index]["type"])
-                        record[header_map[index]["column"]] = rec
-                        abc = ''
+                    if "schema" not in fileInfo:
+                        record[header_map[index]] = column
+                    else:
+                        with Transformer(pre_hook=transform_data_hook) as transformer:
+                            if "type" in header_map[index]["type"]:
+                                if "array" in header_map[index]["type"]["type"]:
+                                    column = eval(column)
+                            rec = transformer.transform(column, header_map[index]["type"])
+                            record[header_map[index]["column"]] = rec
                 if len(record) > 0: #skip empty lines
                     singer.write_record(fileInfo["entity"], record)
 
