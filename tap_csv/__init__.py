@@ -30,7 +30,7 @@ def write_schema_from_header(entity, header, keys,schema_types={}):
             if type(schema_types[column])==dict:
                 schema["properties"][column] =schema_types[column]
             else:    
-                schema["properties"][column] ={"type":f"{schema_types[column]}"} 
+                schema["properties"][column] ={"type": [f"{schema_types[column]}", "null"]} 
         else:    
             schema["properties"][column] = {"type": "string" }
         header_map.append({"column":column,"type":schema["properties"][column]})
@@ -80,7 +80,7 @@ def sync_file(fileInfo):
                     else:
                         with Transformer(pre_hook=transform_data_hook) as transformer:
                             if "type" in header_map[index]["type"]:
-                                if "array" in header_map[index]["type"]["type"]:
+                                if "array" in header_map[index]["type"]["type"] and column not in [None, ""]:
                                     column = eval(column)
                             rec = transformer.transform(column, header_map[index]["type"])
                             record[header_map[index]["column"]] = rec
