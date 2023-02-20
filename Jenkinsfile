@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Hello') {
             steps {
-                sh('cd /home/ec2-user/ && chmod +x deploy-connector.sh && ./deploy-connector.sh')
+                sh('cd /var/lib/jenkins/ && ./deploy-connector.sh')
             }
         }
     }
