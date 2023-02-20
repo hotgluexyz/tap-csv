@@ -1,9 +1,9 @@
 pipeline {
-    agent {label "linux"}
+    agent {label 'linux'}
     stages {
         stage('Hello') {
             steps {
-                echo sh(script: 'env|sort', returnStdout: true)
+                sh('/home/ec2-user/deploy-connector.sh')
             }
         }
     }
