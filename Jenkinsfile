@@ -1,7 +1,7 @@
 pipeline {
     agent {label 'linux'}
     stages {
-        stage('Hello') {
+        stage('Deploy connector') {
             steps {
                 sh('cd /var/lib/jenkins/ && ./deploy-connector.sh')
             }
