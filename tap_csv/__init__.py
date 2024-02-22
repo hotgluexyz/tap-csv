@@ -63,7 +63,7 @@ def sync_file(fileInfo):
     logger.info("Syncing entity '" + fileInfo["entity"] + "' from file: '" + fileInfo["file"] + "'")
     with open(fileInfo["file"], "r") as f:
         needsHeader = True
-        reader = csv.reader(f)
+        reader = csv.reader(x.replace('\0', '') for x in f)
 
         for row in reader:
             if(needsHeader):
