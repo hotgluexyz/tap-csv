@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name='tap-csv',
-      version='0.1.4',
+      version='0.1.7',
       description='Singer.io tap for extracting data from a CSV file',
       author='Robert J. Moore',
       url='http://singer.io',
