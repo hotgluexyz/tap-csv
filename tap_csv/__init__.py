@@ -60,10 +60,10 @@ def sync_file(fileInfo):
         logger.warning("Please provide a CSV file that ends with '.csv'; e.g. 'users.csv'")
         return
 
-    logger.info("Syncing entity '" + fileInfo["entity"] + "' from file: '" + fileInfo["file"] + "'")
+    logger.info("syncing entity '" + fileInfo["entity"] + "' from file: '" + fileInfo["file"] + "'")
     with open(fileInfo["file"], "r") as f:
         needsHeader = True
-        reader = csv.reader(x.replace('\0', '') for x in f)
+        reader = csv.reader(x.replace('\0', '').replace('\x00', '') for x in f)
 
         for row in reader:
             if(needsHeader):
